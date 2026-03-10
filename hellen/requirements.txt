@@ -1,0 +1,11 @@
+opencv-python
+pytesseract
+numpy
+pyttsx3
+SpeechRecognition
+transformers
+torch
+beautifulsoup4
+requests
+mediapipe
+pygame

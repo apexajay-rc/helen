@@ -1,0 +1,2 @@
+# Configuration settings
+LANGUAGE = 'en'
