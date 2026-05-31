@@ -1,6 +1,6 @@
 <div align="center">
 
-# Hellen
+# Helen
 
 ### A Multimodal AI Assistant for Visually Impaired Users
 
@@ -9,7 +9,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-Computer_Vision-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
 [![HuggingFace](https://img.shields.io/badge/HuggingFace-Transformers-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)](https://huggingface.co/docs/transformers)
-[![Accessibility](https://img.shields.io/badge/Focus-Accessibility-0078D4?style=for-the-badge)](#why-hellen)
+[![Accessibility](https://img.shields.io/badge/Focus-Accessibility-0078D4?style=for-the-badge)](#why-helen)
 
 `AI/ML` · `Computer Vision` · `Speech Interfaces` · `Assistive Technology`
 
@@ -17,9 +17,9 @@
 
 ---
 
-## Why Hellen?
+## Why Helen?
 
-Most digital experiences assume that a user can see a screen. Hellen explores a
+Most digital experiences assume that a user can see a screen. Helen explores a
 different interface: one that listens through a microphone, observes through a
 camera, and communicates through spoken feedback.
 
@@ -117,7 +117,7 @@ your `PATH`.
 Place the OpenCV-compatible COCO model files in:
 
 ```text
-hellen/models/
+helen/models/
 ├── frozen_inference_graph.pb
 └── ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt
 ```
@@ -125,10 +125,10 @@ hellen/models/
 The assistant will provide a spoken warning instead of crashing when these files
 are not present.
 
-### 5. Run Hellen
+### 5. Run Helen
 
 ```bash
-cd hellen
+cd helen
 python assistant.py
 ```
 
@@ -148,7 +148,7 @@ python assistant.py
 helen/
 ├── architecture.md
 ├── requirements.txt
-└── hellen/
+└── helen/
     ├── assistant.py                 # Voice loop and intent router
     ├── core/
     │   ├── gesture_music_control.py # MediaPipe gesture recognition
@@ -164,7 +164,7 @@ helen/
 
 ## From Prototype to Frontier
 
-Hellen is currently a software prototype. The next iterations are aimed at
+Helen is currently a software prototype. The next iterations are aimed at
 turning it into a more rigorous, evaluation-driven assistive AI system.
 
 | Phase | Focus | Planned outcome |
@@ -176,7 +176,7 @@ turning it into a more rigorous, evaluation-driven assistive AI system.
 
 ### RAG Direction
 
-A future retrieval-augmented generation pipeline could transform Hellen from a
+A future retrieval-augmented generation pipeline could transform Helen from a
 feature-based assistant into a grounded multimodal agent:
 
 ```mermaid
@@ -194,7 +194,7 @@ Example use case:
 
 ```text
 User: "What matters in this bill?"
-Hellen: "The amount due is 1,280 rupees. The due date is June 5."
+Helen: "The amount due is 1,280 rupees. The due date is June 5."
 ```
 
 ## Engineering Roadmap
@@ -214,7 +214,7 @@ Hellen: "The amount due is 1,280 rupees. The due date is June 5."
 
 ## Responsible AI Notes
 
-Hellen is an experimental prototype, not a safety-certified navigation or
+Helen is an experimental prototype, not a safety-certified navigation or
 medical device. Real-world assistive deployment requires careful evaluation,
 privacy protections, user testing with visually impaired participants, and
 conservative handling of uncertain outputs.
@@ -234,7 +234,7 @@ conservative handling of uncertain outputs.
 
 ## Motivation
 
-Hellen sits at the intersection of **AI engineering**, **accessibility**, and
+Helen sits at the intersection of **AI engineering**, **accessibility**, and
 **human-centered product design**. The project is not only an exploration of ML
 tools; it is an attempt to build technology around a meaningful user need.
 

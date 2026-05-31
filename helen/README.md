@@ -1,6 +1,6 @@
-# Hellen: AI Assistant for the Visually Impaired
+# Helen: AI Assistant for the Visually Impaired
 
-**Hellen** is a powerful AI assistant built with Computer Vision, Natural Language Processing, and Voice Control. Features include:
+**Helen** is a powerful AI assistant built with Computer Vision, Natural Language Processing, and Voice Control. Features include:
 - OCR (Read text from images)
 - Object Detection
 - Gesture-based Music Control

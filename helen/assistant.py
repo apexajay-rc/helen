@@ -41,7 +41,7 @@ def listen():
         return ""
 
 def main():
-    speak("Hello, I'm Hellen. How can I assist you today?")
+    speak("Hello, I'm Helen. How can I assist you today?")
     try:
         while True:
             route_command(listen())
