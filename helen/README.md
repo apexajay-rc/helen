@@ -10,10 +10,11 @@
 ## Setup
 ```bash
 python -m pip install -r requirements.txt
-python assistant.py
+python ui.py
 ```
 
 ## Modules
 - `assistant.py`: Main driver
+- `ui.py`: Animated desktop voice interface
 - `core/`: AI components
 - `utils/`: Helper functions

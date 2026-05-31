@@ -1,5 +1,6 @@
 import speech_recognition as sr
 from utils.audio import speak
+from utils.events import emit_event
 from core.nlp import process_nlp
 from core.ocr import read_text_from_image
 from core.object_detection import detect_objects
@@ -11,6 +12,7 @@ def route_command(command):
     if not command:
         return
 
+    emit_event("processing", command)
     if "exit" in command or "quit" in command:
         speak("Goodbye!")
         raise KeyboardInterrupt
@@ -28,11 +30,21 @@ def route_command(command):
 
 def listen():
     r = sr.Recognizer()
-    with sr.Microphone() as source:
-        speak("I'm listening...")
-        audio = r.listen(source)
     try:
-        return r.recognize_google(audio)
+        with sr.Microphone() as source:
+            emit_event("listening", "Listening...")
+            audio = r.listen(source, timeout=5, phrase_time_limit=8)
+    except sr.WaitTimeoutError:
+        speak("I did not hear anything. Please try again.")
+        return ""
+    except (OSError, AttributeError):
+        speak("Sorry, I could not access the microphone.")
+        return ""
+
+    try:
+        command = r.recognize_google(audio)
+        emit_event("processing", command)
+        return command
     except sr.UnknownValueError:
         speak("Sorry, I didn't catch that.")
         return ""

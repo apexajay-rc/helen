@@ -1,11 +1,22 @@
 import cv2
-import mediapipe as mp
-import pygame
 from utils.audio import speak
 from utils.config import CAMERA_INDEX, SONGS_DIR
 
 def start_gesture_control():
+    import os
+
+    os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
+    import mediapipe as mp
+    import pygame
+
     speak("Starting gesture-based music control...")
+    if not hasattr(mp, "solutions"):
+        speak(
+            "Gesture control is not available with this MediaPipe build. "
+            "The module needs to be upgraded to the new hand landmarker model."
+        )
+        return
+
     mp_hands = mp.solutions.hands.Hands()
     pygame.mixer.init()
     music_files = sorted(SONGS_DIR.glob("*.mp3"))

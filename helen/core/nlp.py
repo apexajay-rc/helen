@@ -3,14 +3,16 @@ from utils.audio import speak
 
 qa = None
 chat = None
+QA_MODEL = "distilbert/distilbert-base-cased-distilled-squad"
+CHAT_MODEL = "openai-community/gpt2"
 
 def load_models():
     global qa, chat
     try:
         if qa is None:
-            qa = pipeline("question-answering")
+            qa = pipeline("question-answering", model=QA_MODEL)
         if chat is None:
-            chat = pipeline("text-generation", model="gpt2")
+            chat = pipeline("text-generation", model=CHAT_MODEL)
     except Exception:
         speak("Sorry, I could not load the language model.")
         return False
@@ -28,6 +30,12 @@ def process_nlp(command):
         speak(answer['answer'])
         return answer["answer"]
     else:
-        response = chat(command, max_length=50, pad_token_id=50256)[0]['generated_text']
+        response = chat(
+            command,
+            max_new_tokens=40,
+            truncation=True,
+            pad_token_id=50256,
+            return_full_text=False,
+        )[0]["generated_text"]
         speak(response)
         return response

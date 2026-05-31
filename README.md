@@ -135,8 +135,17 @@ are not present.
 
 ### 5. Run Helen
 
+Launch the visual voice interface:
+
 ```bash
 cd helen
+python ui.py
+```
+
+The UI provides an animated listening/speaking orb, quick actions, a microphone
+button, and a typed-command fallback. To run the original terminal loop instead:
+
+```bash
 python assistant.py
 ```
 
@@ -158,6 +167,7 @@ helen/
 ├── requirements.txt
 └── helen/
     ├── assistant.py                 # Voice loop and intent router
+    ├── ui.py                        # Animated desktop voice interface
     ├── core/
     │   ├── gesture_music_control.py # MediaPipe gesture recognition
     │   ├── nlp.py                   # Hugging Face NLP pipelines
@@ -212,6 +222,7 @@ Helen: "The amount due is 1,280 rupees. The due date is June 5."
 - [x] COCO label mapping for object detection
 - [x] Failure handling for common runtime issues
 - [x] Centralized paths and configuration
+- [x] Animated desktop UI for listening, processing, and speaking states
 - [ ] Replace baseline detector with a benchmarked YOLO pipeline
 - [ ] Add automated tests for intent routing and module behavior
 - [ ] Add OCR and object-detection evaluation datasets
