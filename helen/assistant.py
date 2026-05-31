@@ -7,12 +7,16 @@ from core.object_detection import detect_objects
 from core.gesture_music_control import start_gesture_control
 from core.voice_search import search_web
 from core.screen_reader import read_screen
-from core.intents import CAPABILITY_GUIDE, INTENTS, classify_intent, extract_search_query
+from core.intents import CAPABILITY_GUIDE, INTENTS, STARTUP_GREETING, classify_intent, extract_search_query
 
 
 def announce_capabilities():
     emit_event("guide", CAPABILITY_GUIDE)
     speak(CAPABILITY_GUIDE)
+
+def greet():
+    emit_event("guide", STARTUP_GREETING)
+    speak(STARTUP_GREETING)
 
 def route_command(command):
     command = command.strip()
@@ -79,8 +83,7 @@ def listen():
         return ""
 
 def main():
-    speak("Hello, I'm Helen. How can I assist you today?")
-    announce_capabilities()
+    greet()
     print("Helen is ready. Say 'quit' to exit.")
     try:
         while True:

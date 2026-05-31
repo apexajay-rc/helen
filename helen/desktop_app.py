@@ -1,12 +1,16 @@
+import os
 import sys
 import threading
 from pathlib import Path
+
+os.environ.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
 
 from PySide6.QtCore import QObject, Property, QUrl, Signal, Slot
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 
-from assistant import announce_capabilities, listen, route_command
+from assistant import announce_capabilities, greet, listen, route_command
+from utils.audio import get_voice_settings, list_voices, speak, update_voice_settings
 from utils.events import set_event_listener
 
 
@@ -15,6 +19,7 @@ class HelenBridge(QObject):
     messageChanged = Signal()
     historyChanged = Signal()
     busyChanged = Signal()
+    voiceSettingsChanged = Signal()
 
     def __init__(self):
         super().__init__()
@@ -22,6 +27,11 @@ class HelenBridge(QObject):
         self._message = "Ready. Ask naturally or choose an action."
         self._history = []
         self._busy = False
+        self._voice_options = []
+        self._voice_name = "System voice"
+        self._speech_rate = 158
+        self._speech_volume = 88
+        self._load_voice_settings()
         set_event_listener(self._receive_event)
 
     @Property(str, notify=stateChanged)
@@ -40,6 +50,26 @@ class HelenBridge(QObject):
     def busy(self):
         return self._busy
 
+    @Property("QStringList", notify=voiceSettingsChanged)
+    def voiceOptions(self):
+        return [voice["name"] for voice in self._voice_options]
+
+    @Property(str, notify=voiceSettingsChanged)
+    def voiceName(self):
+        return self._voice_name
+
+    @Property(int, notify=voiceSettingsChanged)
+    def speechRate(self):
+        return self._speech_rate
+
+    @Property(int, notify=voiceSettingsChanged)
+    def speechVolume(self):
+        return self._speech_volume
+
+    @Slot()
+    def greet(self):
+        self._run_background(greet)
+
     @Slot()
     def announceCapabilities(self):
         self._run_background(announce_capabilities)
@@ -54,10 +84,39 @@ class HelenBridge(QObject):
         if command:
             self._run_background(lambda: route_command(command))
 
+    @Slot(str, int, int)
+    def updateVoiceSettings(self, voice_name, rate, volume):
+        voice_id = next(
+            (
+                voice["id"]
+                for voice in self._voice_options
+                if voice["name"] == voice_name
+            ),
+            "",
+        )
+        settings = update_voice_settings(voice_id, rate, volume / 100)
+        self._voice_name = settings["voice_name"]
+        self._speech_rate = settings["rate"]
+        self._speech_volume = round(settings["volume"] * 100)
+        self.voiceSettingsChanged.emit()
+
+    @Slot()
+    def previewVoice(self):
+        self._run_background(
+            lambda: speak("Hello. I'm Helen. How may I help?")
+        )
+
     def _listen_and_route(self):
         command = listen()
         if command:
             route_command(command)
+
+    def _load_voice_settings(self):
+        self._voice_options = list_voices()
+        settings = get_voice_settings()
+        self._voice_name = settings["voice_name"]
+        self._speech_rate = settings["rate"]
+        self._speech_volume = round(settings["volume"] * 100)
 
     def _receive_event(self, state, message=""):
         self._state = state
@@ -102,7 +161,7 @@ def main():
     if not engine.rootObjects():
         raise RuntimeError("Helen desktop interface could not be loaded.")
 
-    bridge.announceCapabilities()
+    bridge.greet()
     return app.exec()
 
 

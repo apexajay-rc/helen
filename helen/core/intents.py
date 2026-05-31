@@ -129,17 +129,16 @@ INTENTS = {
     },
 }
 
+STARTUP_GREETING = (
+    "Hello. I'm Helen, your desktop accessibility assistant. "
+    "I can read your screen, read text through the camera, describe your "
+    "surroundings, search for information, and play music. How may I help?"
+)
+
 CAPABILITY_GUIDE = (
-    "Here is what I can do. "
-    "I can read visible text from documents, signs, or labels. "
-    "I can read text from your computer screen. "
-    "I can describe objects in front of you. "
-    "I can search the web for information. "
-    "I can start gesture controlled music. "
-    "You can ask in your own words. "
-    "For example, say: read this label, read my screen, what can you see, "
-    "look up assistive technology, or I want to listen to music. "
-    "Say help at any time to hear these options again."
+    "I can read your screen, read documents or labels through the camera, "
+    "describe nearby objects, search for information, and play music. "
+    "You can speak naturally. Say help whenever you want to hear this again."
 )
 
 _classifier = None

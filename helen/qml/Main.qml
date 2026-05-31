@@ -10,7 +10,7 @@ ApplicationWindow {
     minimumHeight: 650
     visible: true
     title: "Helen | Desktop Accessibility Copilot"
-    color: palette.background
+    color: theme.background
 
     property bool highContrast: false
     property bool reducedMotion: false
@@ -21,7 +21,7 @@ ApplicationWindow {
         if (helen.state === "guide") return "#7FD7C4"
         return "#52D2A0"
     }
-    property var palette: ({
+    property var theme: ({
         background: highContrast ? "#000000" : "#07111F",
         surface: highContrast ? "#101010" : "#0D1B2D",
         surfaceRaised: highContrast ? "#191919" : "#11273F",
@@ -42,13 +42,13 @@ ApplicationWindow {
 
         background: Rectangle {
             radius: 6
-            color: control.down ? window.accent : palette.surfaceRaised
-            border.color: control.activeFocus ? window.accent : palette.border
+            color: control.down ? window.accent : theme.surfaceRaised
+            border.color: control.activeFocus ? window.accent : theme.border
             border.width: control.activeFocus ? 3 : 1
         }
         contentItem: Text {
             text: control.text
-            color: palette.text
+            color: theme.text
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             font: control.font
@@ -57,7 +57,7 @@ ApplicationWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: palette.background
+        color: theme.background
 
         RowLayout {
             anchors.fill: parent
@@ -71,7 +71,7 @@ ApplicationWindow {
 
                 Text {
                     text: "HELEN"
-                    color: palette.text
+                    color: theme.text
                     font.pixelSize: 28
                     font.weight: Font.DemiBold
                     Accessible.name: "Helen desktop accessibility copilot"
@@ -79,7 +79,7 @@ ApplicationWindow {
 
                 Text {
                     text: "Local-first desktop accessibility copilot"
-                    color: palette.muted
+                    color: theme.muted
                     font.pixelSize: 14
                 }
 
@@ -160,7 +160,7 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     Layout.maximumWidth: 720
                     text: helen.message
-                    color: palette.muted
+                    color: theme.muted
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
                     font.pixelSize: 15
@@ -208,8 +208,8 @@ ApplicationWindow {
                         id: commandInput
                         Layout.fillWidth: true
                         placeholderText: "Ask naturally: read my screen, describe what is ahead, search accessibility..."
-                        color: palette.text
-                        placeholderTextColor: palette.muted
+                        color: theme.text
+                        placeholderTextColor: theme.muted
                         font.pixelSize: 15
                         Accessible.name: "Type a request for Helen"
                         Accessible.description: placeholderText
@@ -220,8 +220,8 @@ ApplicationWindow {
                         }
                         background: Rectangle {
                             radius: 6
-                            color: palette.surfaceRaised
-                            border.color: commandInput.activeFocus ? window.accent : palette.border
+                            color: theme.surfaceRaised
+                            border.color: commandInput.activeFocus ? window.accent : theme.border
                             border.width: commandInput.activeFocus ? 3 : 1
                         }
                     }
@@ -248,8 +248,8 @@ ApplicationWindow {
                 Layout.preferredWidth: 300
                 Layout.fillHeight: true
                 radius: 8
-                color: palette.surface
-                border.color: palette.border
+                color: theme.surface
+                border.color: theme.border
                 border.width: 1
 
                 ColumnLayout {
@@ -259,7 +259,7 @@ ApplicationWindow {
 
                     Text {
                         text: "Activity"
-                        color: palette.text
+                        color: theme.text
                         font.pixelSize: 18
                         font.weight: Font.DemiBold
                     }
@@ -276,14 +276,14 @@ ApplicationWindow {
                             width: ListView.view.width
                             height: historyText.implicitHeight + 20
                             radius: 5
-                            color: palette.surfaceRaised
+                            color: theme.surfaceRaised
 
                             Text {
                                 id: historyText
                                 anchors.fill: parent
                                 anchors.margins: 10
                                 text: modelData
-                                color: palette.muted
+                                color: theme.muted
                                 wrapMode: Text.WordWrap
                                 font.pixelSize: 12
                             }
@@ -302,6 +302,77 @@ ApplicationWindow {
                         checked: window.reducedMotion
                         onToggled: window.reducedMotion = checked
                         Accessible.name: "Toggle reduced motion mode"
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 1
+                        color: theme.border
+                    }
+
+                    Text {
+                        text: "Voice"
+                        color: theme.text
+                        font.pixelSize: 17
+                        font.weight: Font.DemiBold
+                    }
+
+                    ComboBox {
+                        id: voicePicker
+                        Layout.fillWidth: true
+                        model: helen.voiceOptions
+                        Accessible.name: "Helen voice"
+                        Component.onCompleted: {
+                            currentIndex = Math.max(0, find(helen.voiceName))
+                        }
+                        onActivated: {
+                            helen.updateVoiceSettings(currentText, rateSlider.value, volumeSlider.value)
+                        }
+                    }
+
+                    Text {
+                        text: "Speech rate"
+                        color: theme.muted
+                        font.pixelSize: 13
+                    }
+
+                    Slider {
+                        id: rateSlider
+                        Layout.fillWidth: true
+                        from: 110
+                        to: 220
+                        stepSize: 2
+                        value: helen.speechRate
+                        Accessible.name: "Speech rate"
+                        onMoved: {
+                            helen.updateVoiceSettings(voicePicker.currentText, value, volumeSlider.value)
+                        }
+                    }
+
+                    Text {
+                        text: "Volume"
+                        color: theme.muted
+                        font.pixelSize: 13
+                    }
+
+                    Slider {
+                        id: volumeSlider
+                        Layout.fillWidth: true
+                        from: 20
+                        to: 100
+                        stepSize: 2
+                        value: helen.speechVolume
+                        Accessible.name: "Speech volume"
+                        onMoved: {
+                            helen.updateVoiceSettings(voicePicker.currentText, rateSlider.value, value)
+                        }
+                    }
+
+                    ActionButton {
+                        Layout.fillWidth: true
+                        text: "Preview voice"
+                        accessibleLabel: "Preview selected Helen voice"
+                        onClicked: helen.previewVoice()
                     }
                 }
             }
