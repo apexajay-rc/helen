@@ -139,14 +139,23 @@ spoken warning instead of crashing if assets have not been downloaded yet.
 
 ### 5. Run Helen
 
-Launch the visual voice interface:
+Launch the Qt Quick desktop application:
+
+```bash
+python desktop_app.py
+```
+
+The desktop app provides an animated listening/speaking orb, accessible quick
+actions, a microphone button, a typed-command fallback, activity history,
+high-contrast mode, and reduced-motion mode.
+
+To launch the temporary Tkinter test harness instead:
 
 ```bash
 python ui.py
 ```
 
-The UI provides an animated listening/speaking orb, quick actions, a microphone
-button, and a typed-command fallback. To run the original terminal loop instead:
+To run the original terminal loop:
 
 ```bash
 python assistant.py
@@ -175,8 +184,10 @@ helen/
 ├── requirements.txt
 └── helen/
     ├── assistant.py                 # Voice loop and intent router
+    ├── desktop_app.py               # PySide6 bridge for the desktop product
     ├── setup_models.py              # One-command vision model download
-    ├── ui.py                        # Animated desktop voice interface
+    ├── ui.py                        # Temporary Tkinter test harness
+    ├── qml/Main.qml                 # Qt Quick desktop interface
     ├── core/
     │   ├── gesture_music_control.py # MediaPipe gesture recognition
     │   ├── nlp.py                   # Hugging Face NLP pipelines
@@ -233,6 +244,8 @@ Helen: "The amount due is 1,280 rupees. The due date is June 5."
 - [x] Centralized paths and configuration
 - [x] Animated desktop UI for listening, processing, and speaking states
 - [x] Natural-language intent routing with optional zero-shot classification
+- [x] Read-screen workflow using local screenshot OCR
+- [x] Cross-platform Qt Quick desktop application scaffold
 - [ ] Replace baseline detector with a benchmarked YOLO pipeline
 - [ ] Add automated tests for intent routing and module behavior
 - [ ] Add OCR and object-detection evaluation datasets

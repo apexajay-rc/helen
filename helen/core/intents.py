@@ -46,6 +46,24 @@ INTENTS = {
             "letter",
         ),
     },
+    "read_screen": {
+        "label": "read the current screen",
+        "examples": (
+            "read my screen",
+            "what is on my screen",
+            "read this window",
+            "tell me what is displayed",
+            "explain the popup on my screen",
+        ),
+        "keywords": (
+            "screen",
+            "window",
+            "popup",
+            "displayed",
+            "desktop",
+            "dialog",
+        ),
+    },
     "describe_objects": {
         "label": "describe surroundings",
         "examples": (
@@ -114,11 +132,12 @@ INTENTS = {
 CAPABILITY_GUIDE = (
     "Here is what I can do. "
     "I can read visible text from documents, signs, or labels. "
+    "I can read text from your computer screen. "
     "I can describe objects in front of you. "
     "I can search the web for information. "
     "I can start gesture controlled music. "
     "You can ask in your own words. "
-    "For example, say: read this label, what can you see, "
+    "For example, say: read this label, read my screen, what can you see, "
     "look up assistive technology, or I want to listen to music. "
     "Say help at any time to hear these options again."
 )

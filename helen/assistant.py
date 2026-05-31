@@ -6,6 +6,7 @@ from core.ocr import read_text_from_image
 from core.object_detection import detect_objects
 from core.gesture_music_control import start_gesture_control
 from core.voice_search import search_web
+from core.screen_reader import read_screen
 from core.intents import CAPABILITY_GUIDE, INTENTS, classify_intent, extract_search_query
 
 
@@ -33,6 +34,8 @@ def route_command(command):
         raise KeyboardInterrupt
     elif intent == "read_text":
         read_text_from_image()
+    elif intent == "read_screen":
+        read_screen()
     elif intent == "describe_objects":
         detect_objects()
     elif intent == "play_music":

@@ -9,3 +9,5 @@ pygame>=2.5,<3
 numpy>=1.24,<3
 torch>=2.2,<3
 transformers>=4.34,<5
+Pillow>=10,<12
+PySide6>=6.8,<7
