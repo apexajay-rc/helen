@@ -23,4 +23,4 @@ def speak(text):
         engine = _get_engine()
         engine.say(str(text))
         engine.runAndWait()
-    emit_event("idle", "Ready")
+    emit_event("idle")

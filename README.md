@@ -35,6 +35,7 @@ low-cost assistant for visually impaired users.
 | Capability | How it works | Example user intent |
 | --- | --- | --- |
 | **Voice command routing** | SpeechRecognition converts speech to text and routes commands to specialized modules. | `"Describe what you see"` |
+| **Natural-language intent resolution** | Offline phrase, keyword, and fuzzy matching maps varied requests to assistant actions. Optional zero-shot Transformers classification handles ambiguous requests. | `"I want to listen to music right now"` |
 | **OCR text reader** | A webcam frame is processed with Tesseract OCR and read aloud. | `"Read this text"` |
 | **Object detection** | OpenCV DNN processes a camera frame and speaks recognized COCO object labels. | `"What objects are in front of me?"` |
 | **Conversational NLP** | Hugging Face pipelines support basic question answering and text generation. | `"Who is OpenAI?"` |
@@ -149,6 +150,11 @@ button, and a typed-command fallback. To run the original terminal loop instead:
 python assistant.py
 ```
 
+Helen accepts natural phrasing rather than requiring exact commands. For
+optional zero-shot deep-learning intent classification on ambiguous requests,
+set `HELEN_ENABLE_SEMANTIC_INTENTS=1` before launching the assistant. The first
+semantic request may download the classifier model.
+
 ## Example Commands
 
 ```text
@@ -223,6 +229,7 @@ Helen: "The amount due is 1,280 rupees. The due date is June 5."
 - [x] Failure handling for common runtime issues
 - [x] Centralized paths and configuration
 - [x] Animated desktop UI for listening, processing, and speaking states
+- [x] Natural-language intent routing with optional zero-shot classification
 - [ ] Replace baseline detector with a benchmarked YOLO pipeline
 - [ ] Add automated tests for intent routing and module behavior
 - [ ] Add OCR and object-detection evaluation datasets

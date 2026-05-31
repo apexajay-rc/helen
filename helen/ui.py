@@ -3,7 +3,7 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 
-from assistant import listen, route_command
+from assistant import announce_capabilities, listen, route_command
 from utils.events import set_event_listener
 
 
@@ -37,6 +37,7 @@ class HelenUI:
         self._build_layout()
         set_event_listener(self._on_assistant_event)
         self._animate()
+        self.root.after(550, lambda: self._run_background(announce_capabilities))
 
     def _configure_window(self):
         self.root.title("Helen | Multimodal AI Assistant")
@@ -82,7 +83,7 @@ class HelenUI:
             bg=COLORS["bg"],
             highlightthickness=0,
         )
-        self.canvas.pack(pady=(18, 0))
+        self.canvas.pack(pady=(10, 0))
 
         self.status_label = tk.Label(
             self.root,
@@ -101,16 +102,32 @@ class HelenUI:
             bg=COLORS["bg"],
             fg=COLORS["muted"],
             font=("Segoe UI", 11),
-        ).pack(padx=42, pady=(9, 18))
+        ).pack(padx=42, pady=(9, 12))
 
         action_bar = tk.Frame(self.root, bg=COLORS["bg"])
         action_bar.pack()
+        self._button(action_bar, "Hear options", "help").pack(side="left", padx=5)
         self._button(action_bar, "Read text", "read text").pack(side="left", padx=5)
         self._button(action_bar, "Describe", "describe objects").pack(side="left", padx=5)
         self._button(action_bar, "Gesture music", "gesture music").pack(side="left", padx=5)
 
+        tk.Label(
+            self.root,
+            text=(
+                "ASK NATURALLY\n"
+                "Read a document or label  |  Describe nearby objects  |  "
+                "Search the web  |  Play music  |  Hear options"
+            ),
+            justify="center",
+            bg=COLORS["panel"],
+            fg=COLORS["muted"],
+            font=("Segoe UI", 9),
+            padx=16,
+            pady=10,
+        ).pack(fill="x", padx=92, pady=(15, 0))
+
         command_bar = tk.Frame(self.root, bg=COLORS["bg"])
-        command_bar.pack(fill="x", padx=92, pady=(20, 0))
+        command_bar.pack(fill="x", padx=92, pady=(14, 0))
 
         entry = ttk.Entry(
             command_bar,
@@ -218,7 +235,7 @@ class HelenUI:
 
     def _set_state(self, state, message):
         self.state = state
-        self.status_text.set(state.title())
+        self.status_text.set("Options" if state == "guide" else state.title())
         self.status_label.configure(fg=COLORS.get(state, COLORS["idle"]))
         if message:
             self.transcript_text.set(message)

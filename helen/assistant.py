@@ -6,24 +6,39 @@ from core.ocr import read_text_from_image
 from core.object_detection import detect_objects
 from core.gesture_music_control import start_gesture_control
 from core.voice_search import search_web
+from core.intents import CAPABILITY_GUIDE, INTENTS, classify_intent, extract_search_query
+
+
+def announce_capabilities():
+    emit_event("guide", CAPABILITY_GUIDE)
+    speak(CAPABILITY_GUIDE)
 
 def route_command(command):
-    command = command.strip().lower()
+    command = command.strip()
     if not command:
         return
 
-    emit_event("processing", command)
-    if "exit" in command or "quit" in command:
+    intent, confidence = classify_intent(command)
+    intent_label = INTENTS.get(intent, {}).get("label", "conversation")
+    emit_event(
+        "processing",
+        f'You said: "{command}"\nDetected intent: {intent_label}',
+    )
+    print(f"Detected intent: {intent_label} ({confidence:.0%})")
+
+    if intent == "help":
+        announce_capabilities()
+    elif intent == "quit":
         speak("Goodbye!")
         raise KeyboardInterrupt
-    if "read" in command or "text" in command:
+    elif intent == "read_text":
         read_text_from_image()
-    elif "describe" in command or "object" in command or "see" in command:
+    elif intent == "describe_objects":
         detect_objects()
-    elif "music" in command or "gesture" in command:
+    elif intent == "play_music":
         start_gesture_control()
-    elif "search" in command:
-        query = command.replace("search", "", 1).strip()
+    elif intent == "web_search":
+        query = extract_search_query(command)
         search_web(query)
     else:
         process_nlp(command)
@@ -62,6 +77,7 @@ def listen():
 
 def main():
     speak("Hello, I'm Helen. How can I assist you today?")
+    announce_capabilities()
     print("Helen is ready. Say 'quit' to exit.")
     try:
         while True:
