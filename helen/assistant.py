@@ -33,27 +33,36 @@ def listen():
     try:
         with sr.Microphone() as source:
             emit_event("listening", "Listening...")
+            print("\nListening... Speak a command.")
+            r.adjust_for_ambient_noise(source, duration=0.6)
             audio = r.listen(source, timeout=5, phrase_time_limit=8)
     except sr.WaitTimeoutError:
+        print("No speech detected.")
         speak("I did not hear anything. Please try again.")
         return ""
     except (OSError, AttributeError):
+        print("Microphone unavailable.")
         speak("Sorry, I could not access the microphone.")
         return ""
 
     try:
+        print("Recognizing speech...")
         command = r.recognize_google(audio)
+        print(f"You said: {command}")
         emit_event("processing", command)
         return command
     except sr.UnknownValueError:
+        print("Speech was captured, but it could not be understood.")
         speak("Sorry, I didn't catch that.")
         return ""
     except sr.RequestError:
+        print("Google speech recognition service is unavailable.")
         speak("Sorry, speech service is unavailable.")
         return ""
 
 def main():
     speak("Hello, I'm Helen. How can I assist you today?")
+    print("Helen is ready. Say 'quit' to exit.")
     try:
         while True:
             route_command(listen())
