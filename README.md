@@ -106,11 +106,19 @@ source .venv/bin/activate
 ### 3. Install dependencies
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 Tesseract OCR must also be installed on your operating system and available on
 your `PATH`.
+
+The default requirements install only the dependencies used by the current
+prototype. To experiment with planned Whisper, YOLO, and local-LLM features,
+install the optional edge stack afterward:
+
+```bash
+python -m pip install -r requirements-edge.txt
+```
 
 ### 4. Add object-detection model files
 

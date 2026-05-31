@@ -1,0 +1,11 @@
+# Optional dependencies for planned offline speech, YOLO, and local LLM work.
+# Install these after the baseline requirements when developing frontier features:
+# python -m pip install -r requirements-edge.txt
+
+openai-whisper==20250625
+ollama>=0.1,<1
+ultralytics>=8,<9
+torchvision>=0.17,<1
+pydantic>=2.5,<3
+pyyaml>=6,<7
+python-dotenv>=1,<2
