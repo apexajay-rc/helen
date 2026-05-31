@@ -1,26 +1,39 @@
 import cv2
 import mediapipe as mp
 import pygame
-import os
 from utils.audio import speak
+from utils.config import CAMERA_INDEX, SONGS_DIR
 
 def start_gesture_control():
     speak("Starting gesture-based music control...")
     mp_hands = mp.solutions.hands.Hands()
     pygame.mixer.init()
-    music_files = [f for f in os.listdir("data/songs") if f.endswith(".mp3")]
+    music_files = sorted(SONGS_DIR.glob("*.mp3"))
+    if not music_files:
+        speak("I could not find any songs to play.")
+        return
+
     song_idx = 0
-    pygame.mixer.music.load(f"data/songs/{music_files[song_idx]}")
+    pygame.mixer.music.load(str(music_files[song_idx]))
     pygame.mixer.music.play()
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(CAMERA_INDEX)
+    frames_checked = 0
     while True:
         ret, frame = cap.read()
+        if not ret or frame is None:
+            speak("Sorry, I could not access the camera.")
+            break
+
+        frames_checked += 1
         results = mp_hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if results.multi_hand_landmarks:
             song_idx = (song_idx + 1) % len(music_files)
-            pygame.mixer.music.load(f"data/songs/{music_files[song_idx]}")
+            pygame.mixer.music.load(str(music_files[song_idx]))
             pygame.mixer.music.play()
-            speak(f"Switched to {music_files[song_idx]}")
+            speak(f"Switched to {music_files[song_idx].name}")
+            break
+        if frames_checked > 300:
+            speak("I did not detect a hand gesture.")
             break
     cap.release()
