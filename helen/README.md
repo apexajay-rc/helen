@@ -10,6 +10,7 @@
 ## Setup
 ```bash
 python -m pip install -r requirements.txt
+python setup_models.py
 python ui.py
 ```
 

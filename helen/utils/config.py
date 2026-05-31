@@ -12,3 +12,4 @@ CAMERA_INDEX = 0
 OBJECT_CONFIDENCE_THRESHOLD = 0.6
 OBJECT_MODEL_WEIGHTS = MODEL_DIR / "frozen_inference_graph.pb"
 OBJECT_MODEL_CONFIG = MODEL_DIR / "ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt"
+HAND_LANDMARKER_MODEL = MODEL_DIR / "hand_landmarker.task"

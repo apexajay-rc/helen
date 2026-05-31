@@ -110,7 +110,10 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-Tesseract OCR must also be installed on your operating system and available on
+Tesseract OCR must also be installed on your operating system. On Windows,
+install the [Tesseract OCR engine](https://github.com/tesseract-ocr/tesseract)
+in its standard `C:\Program Files\Tesseract-OCR` directory. Helen detects that
+path automatically. On Linux or macOS, make sure `tesseract` is available on
 your `PATH`.
 
 The default requirements install only the dependencies used by the current
@@ -123,23 +126,22 @@ python -m pip install -r requirements-edge.txt
 
 ### 4. Add object-detection model files
 
-Place the OpenCV-compatible COCO model files in:
+Download the computer-vision model assets:
 
-```text
-helen/models/
-├── frozen_inference_graph.pb
-└── ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt
+```bash
+cd helen
+python setup_models.py
 ```
 
-The assistant will provide a spoken warning instead of crashing when these files
-are not present.
+This downloads the MobileNet SSD object detector and MediaPipe Hand Landmarker
+bundle into the git-ignored `helen/models/` directory. The assistant provides a
+spoken warning instead of crashing if assets have not been downloaded yet.
 
 ### 5. Run Helen
 
 Launch the visual voice interface:
 
 ```bash
-cd helen
 python ui.py
 ```
 
@@ -173,6 +175,7 @@ helen/
 ├── requirements.txt
 └── helen/
     ├── assistant.py                 # Voice loop and intent router
+    ├── setup_models.py              # One-command vision model download
     ├── ui.py                        # Animated desktop voice interface
     ├── core/
     │   ├── gesture_music_control.py # MediaPipe gesture recognition

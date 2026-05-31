@@ -92,26 +92,38 @@ COCO_LABELS = {
 
 def detect_objects():
     if not OBJECT_MODEL_WEIGHTS.exists() or not OBJECT_MODEL_CONFIG.exists():
-        speak("Object detection model files are missing. Please add the COCO model files in the models folder.")
+        speak(
+            "Object detection model files are missing. "
+            "Please run python setup_models.py first."
+        )
         return []
 
-    net = cv2.dnn.readNet(str(OBJECT_MODEL_WEIGHTS), str(OBJECT_MODEL_CONFIG))
+    model = cv2.dnn_DetectionModel(
+        str(OBJECT_MODEL_WEIGHTS),
+        str(OBJECT_MODEL_CONFIG),
+    )
+    model.setInputSize(320, 320)
+    model.setInputScale(1.0 / 127.5)
+    model.setInputMean((127.5, 127.5, 127.5))
+    model.setInputSwapRB(True)
+
     cam = cv2.VideoCapture(CAMERA_INDEX)
-    ok, frame = cam.read()
+    ok, frame = False, None
+    for _ in range(5):
+        ok, frame = cam.read()
     cam.release()
     if not ok or frame is None:
         speak("Sorry, I could not access the camera.")
         return []
 
-    blob = cv2.dnn.blobFromImage(frame, size=(300, 300), swapRB=True)
-    net.setInput(blob)
-    output = net.forward()
-
     detected = []
-    for detection in output[0, 0]:
-        confidence = detection[2]
-        if confidence > OBJECT_CONFIDENCE_THRESHOLD:
-            idx = int(detection[1])
+    class_ids, confidences, _ = model.detect(
+        frame,
+        confThreshold=OBJECT_CONFIDENCE_THRESHOLD,
+    )
+    for class_id, confidence in zip(class_ids, confidences):
+        if float(confidence) > OBJECT_CONFIDENCE_THRESHOLD:
+            idx = int(class_id)
             detected.append(COCO_LABELS.get(idx, f"object {idx}"))
 
     unique_objects = sorted(set(detected))
