@@ -139,7 +139,7 @@ spoken warning instead of crashing if assets have not been downloaded yet.
 
 ### 5. Run Helen
 
-Launch the Qt Quick desktop application:
+Launch the quiet Qt Quick desktop application:
 
 ```bash
 python desktop_app.py
@@ -148,6 +148,35 @@ python desktop_app.py
 The desktop app provides an animated listening/speaking orb, accessible quick
 actions, a microphone button, a typed-command fallback, activity history,
 high-contrast mode, and reduced-motion mode.
+
+Helen does not speak automatically on launch. Use the command box, action
+buttons, or wake-word daemon to invoke it.
+
+Run the background wake-word daemon:
+
+```bash
+python background_daemon.py
+```
+
+Then say:
+
+```text
+Helen, read my screen
+Helen, describe what is ahead
+Helen, search assistive technology
+```
+
+On Windows, register the quiet wake listener at login:
+
+```bash
+python install_background_startup.py
+```
+
+Remove it later with:
+
+```bash
+python install_background_startup.py --remove
+```
 
 To launch the temporary Tkinter test harness instead:
 
@@ -184,6 +213,7 @@ helen/
 ├── requirements.txt
 └── helen/
     ├── assistant.py                 # Voice loop and intent router
+    ├── background_daemon.py         # Quiet wake-word listener
     ├── desktop_app.py               # PySide6 bridge for the desktop product
     ├── setup_models.py              # One-command vision model download
     ├── ui.py                        # Temporary Tkinter test harness
@@ -246,6 +276,8 @@ Helen: "The amount due is 1,280 rupees. The due date is June 5."
 - [x] Natural-language intent routing with optional zero-shot classification
 - [x] Read-screen workflow using local screenshot OCR
 - [x] Cross-platform Qt Quick desktop application scaffold
+- [x] Quiet wake-word daemon mode
+- [x] Transcript export support
 - [ ] Replace baseline detector with a benchmarked YOLO pipeline
 - [ ] Add automated tests for intent routing and module behavior
 - [ ] Add OCR and object-detection evaluation datasets

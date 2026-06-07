@@ -1,4 +1,7 @@
 import json
+import asyncio
+import tempfile
+import time
 from pathlib import Path
 from threading import Lock
 
@@ -8,6 +11,8 @@ _engine = None
 _lock = Lock()
 _settings_path = Path.home() / ".helen" / "voice.json"
 _settings = {
+    "engine": "edge",
+    "edge_voice": "en-US-AriaNeural",
     "voice_id": "",
     "rate": 158,
     "volume": 0.88,
@@ -20,6 +25,9 @@ def _load_settings():
             _settings.update(json.loads(_settings_path.read_text(encoding="utf-8")))
         except (OSError, ValueError, TypeError):
             pass
+
+
+_load_settings()
 
 
 def _save_settings():
@@ -54,6 +62,55 @@ def _apply_settings(engine):
     engine.setProperty("volume", float(_settings["volume"]))
 
 
+def _edge_rate():
+    delta = int((_settings["rate"] - 160) / 2)
+    if delta == 0:
+        return "+0%"
+    return f"{delta:+d}%"
+
+
+def _edge_volume():
+    delta = int((_settings["volume"] * 100) - 100)
+    if delta == 0:
+        return "+0%"
+    return f"{delta:+d}%"
+
+
+async def _save_edge_speech(text, destination):
+    import edge_tts
+
+    communicate = edge_tts.Communicate(
+        text,
+        _settings["edge_voice"],
+        rate=_edge_rate(),
+        volume=_edge_volume(),
+    )
+    await communicate.save(str(destination))
+
+
+def _speak_with_edge(text):
+    import pygame
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
+        path = Path(temp_file.name)
+    try:
+        asyncio.run(_save_edge_speech(text, path))
+        pygame.mixer.init()
+        pygame.mixer.music.load(str(path))
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            time.sleep(0.05)
+    finally:
+        try:
+            pygame.mixer.music.unload()
+        except Exception:
+            pass
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 def _get_engine():
     global _engine
     if _engine is None:
@@ -82,6 +139,8 @@ def get_voice_settings():
         "System voice",
     )
     return {
+        "engine": _settings["engine"],
+        "edge_voice": _settings["edge_voice"],
         "voice_id": current_id,
         "voice_name": current_name,
         "rate": int(_settings["rate"]),
@@ -89,15 +148,19 @@ def get_voice_settings():
     }
 
 
-def update_voice_settings(voice_id=None, rate=None, volume=None):
-    engine = _get_engine()
+def update_voice_settings(engine_name=None, edge_voice=None, voice_id=None, rate=None, volume=None):
+    speech_engine = _get_engine()
+    if engine_name:
+        _settings["engine"] = engine_name
+    if edge_voice:
+        _settings["edge_voice"] = edge_voice
     if voice_id:
         _settings["voice_id"] = voice_id
     if rate is not None:
         _settings["rate"] = max(110, min(220, int(rate)))
     if volume is not None:
         _settings["volume"] = max(0.2, min(1.0, float(volume)))
-    _apply_settings(engine)
+    _apply_settings(speech_engine)
     _save_settings()
     return get_voice_settings()
 
@@ -108,7 +171,15 @@ def speak(text):
 
     emit_event("speaking", str(text))
     with _lock:
-        engine = _get_engine()
-        engine.say(str(text))
-        engine.runAndWait()
+        if _settings.get("engine") == "edge":
+            try:
+                _speak_with_edge(str(text))
+            except Exception:
+                engine = _get_engine()
+                engine.say(str(text))
+                engine.runAndWait()
+        else:
+            engine = _get_engine()
+            engine.say(str(text))
+            engine.runAndWait()
     emit_event("idle")

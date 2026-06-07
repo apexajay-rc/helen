@@ -6,10 +6,14 @@ from pathlib import Path
 os.environ.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
 
 from PySide6.QtCore import QObject, Property, QUrl, Signal, Slot
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import (
+    QAccessible,
+    QAccessibleAnnouncementEvent,
+    QGuiApplication,
+)
 from PySide6.QtQml import QQmlApplicationEngine
 
-from assistant import announce_capabilities, greet, listen, route_command
+from assistant import announce_capabilities, listen, route_command
 from utils.audio import get_voice_settings, list_voices, speak, update_voice_settings
 from utils.events import set_event_listener
 
@@ -20,6 +24,7 @@ class HelenBridge(QObject):
     historyChanged = Signal()
     busyChanged = Signal()
     voiceSettingsChanged = Signal()
+    accessibilityAnnouncementRequested = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -29,10 +34,14 @@ class HelenBridge(QObject):
         self._busy = False
         self._voice_options = []
         self._voice_name = "System voice"
+        self._voice_engine = "edge"
         self._speech_rate = 158
         self._speech_volume = 88
         self._load_voice_settings()
         set_event_listener(self._receive_event)
+        self.accessibilityAnnouncementRequested.connect(
+            self._announce_accessibly
+        )
 
     @Property(str, notify=stateChanged)
     def state(self):
@@ -66,9 +75,9 @@ class HelenBridge(QObject):
     def speechVolume(self):
         return self._speech_volume
 
-    @Slot()
-    def greet(self):
-        self._run_background(greet)
+    @Property(bool, notify=voiceSettingsChanged)
+    def neuralVoiceEnabled(self):
+        return self._voice_engine == "edge"
 
     @Slot()
     def announceCapabilities(self):
@@ -94,11 +103,35 @@ class HelenBridge(QObject):
             ),
             "",
         )
-        settings = update_voice_settings(voice_id, rate, volume / 100)
+        settings = update_voice_settings(
+            voice_id=voice_id,
+            rate=rate,
+            volume=volume / 100,
+        )
+        self._apply_voice_settings(settings)
+        self.voiceSettingsChanged.emit()
+
+    @Slot(bool)
+    def setNeuralVoiceEnabled(self, enabled):
+        settings = update_voice_settings(
+            engine_name="edge" if enabled else "system"
+        )
+        self._apply_voice_settings(settings)
+        self.voiceSettingsChanged.emit()
+
+    @Slot()
+    def exportTranscript(self):
+        transcript_dir = Path.home() / "Documents" / "Helen"
+        transcript_dir.mkdir(parents=True, exist_ok=True)
+        transcript_file = transcript_dir / "helen-transcript.txt"
+        transcript_file.write_text("\n\n".join(self._history), encoding="utf-8")
+        self._receive_event("idle", f"Transcript saved to {transcript_file}")
+
+    def _apply_voice_settings(self, settings):
+        self._voice_engine = settings["engine"]
         self._voice_name = settings["voice_name"]
         self._speech_rate = settings["rate"]
         self._speech_volume = round(settings["volume"] * 100)
-        self.voiceSettingsChanged.emit()
 
     @Slot()
     def previewVoice(self):
@@ -114,9 +147,7 @@ class HelenBridge(QObject):
     def _load_voice_settings(self):
         self._voice_options = list_voices()
         settings = get_voice_settings()
-        self._voice_name = settings["voice_name"]
-        self._speech_rate = settings["rate"]
-        self._speech_volume = round(settings["volume"] * 100)
+        self._apply_voice_settings(settings)
 
     def _receive_event(self, state, message=""):
         self._state = state
@@ -124,8 +155,14 @@ class HelenBridge(QObject):
         if message:
             self._message = message
             self.messageChanged.emit()
-            self._history = ([message] + self._history)[:8]
+            self._history = (self._history + [message])[-20:]
             self.historyChanged.emit()
+            self.accessibilityAnnouncementRequested.emit(message)
+
+    @Slot(str)
+    def _announce_accessibly(self, message):
+        event = QAccessibleAnnouncementEvent(self, message)
+        QAccessible.updateAccessibility(event)
 
     def _run_background(self, operation):
         if self._busy:
@@ -161,7 +198,6 @@ def main():
     if not engine.rootObjects():
         raise RuntimeError("Helen desktop interface could not be loaded.")
 
-    bridge.greet()
     return app.exec()
 
 

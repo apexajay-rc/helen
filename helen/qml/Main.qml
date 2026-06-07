@@ -214,6 +214,7 @@ ApplicationWindow {
                         Accessible.name: "Type a request for Helen"
                         Accessible.description: placeholderText
                         Accessible.role: Accessible.EditableText
+                        Component.onCompleted: forceActiveFocus()
                         onAccepted: {
                             helen.runCommand(text)
                             clear()
@@ -288,6 +289,13 @@ ApplicationWindow {
                                 font.pixelSize: 12
                             }
                         }
+                    }
+
+                    CheckBox {
+                        text: "Use neural voice"
+                        checked: helen.neuralVoiceEnabled
+                        onToggled: helen.setNeuralVoiceEnabled(checked)
+                        Accessible.name: "Toggle neural voice"
                     }
 
                     CheckBox {
@@ -373,6 +381,13 @@ ApplicationWindow {
                         text: "Preview voice"
                         accessibleLabel: "Preview selected Helen voice"
                         onClicked: helen.previewVoice()
+                    }
+
+                    ActionButton {
+                        Layout.fillWidth: true
+                        text: "Export transcript"
+                        accessibleLabel: "Export Helen transcript"
+                        onClicked: helen.exportTranscript()
                     }
                 }
             }

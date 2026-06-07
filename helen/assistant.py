@@ -83,7 +83,8 @@ def listen():
         return ""
 
 def main():
-    greet()
+    emit_event("guide", STARTUP_GREETING)
+    print(STARTUP_GREETING)
     print("Helen is ready. Say 'quit' to exit.")
     try:
         while True:
