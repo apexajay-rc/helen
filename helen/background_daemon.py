@@ -1,91 +1,107 @@
 import argparse
-import re
+import json
+import os
 import time
+from datetime import datetime, timezone
+from pathlib import Path
 
 import speech_recognition as sr
 
 from assistant import route_command
+from core.wake_word import OfflineWakeWordDetector
+from setup_models import download_vosk_model
 from utils.audio import speak
 from utils.events import emit_event
 
-
-WAKE_WORDS = ("helen", "hey helen", "hello helen")
-
-
-def _strip_wake_phrase(text):
-    command = text.strip()
-    for wake in sorted(WAKE_WORDS, key=len, reverse=True):
-        pattern = rf"^\s*{re.escape(wake)}[\s,.:;-]*(.*)$"
-        match = re.match(pattern, command, flags=re.IGNORECASE)
-        if match:
-            return match.group(1).strip()
-    return None
+STATUS_PATH = Path.home() / ".helen" / "daemon_status.json"
 
 
-def _recognize(recognizer, audio):
+def _write_status(state, detail=""):
+    STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    STATUS_PATH.write_text(
+        json.dumps(
+            {
+                "pid": os.getpid(),
+                "state": state,
+                "detail": detail,
+                "wake_detection": "offline_vosk",
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+
+def _recognize_command(recognizer, audio):
     try:
         return recognizer.recognize_google(audio)
     except sr.UnknownValueError:
+        speak("I did not understand the command.")
         return ""
     except sr.RequestError:
-        emit_event("idle", "Speech recognition service is unavailable.")
+        speak("Speech recognition service is unavailable.")
         return ""
 
 
-def _listen_once(recognizer, source, timeout=None, phrase_time_limit=5):
+def _listen_for_command(recognizer, source):
     try:
         audio = recognizer.listen(
             source,
-            timeout=timeout,
-            phrase_time_limit=phrase_time_limit,
+            timeout=5,
+            phrase_time_limit=10,
         )
     except sr.WaitTimeoutError:
+        speak("I did not hear a command.")
         return ""
-    return _recognize(recognizer, audio)
+    return _recognize_command(recognizer, audio)
 
 
 def run_daemon(acknowledge=True):
+    _write_status("starting", "Preparing offline wake-word model.")
+    download_vosk_model()
     recognizer = sr.Recognizer()
+
     with sr.Microphone() as source:
-        recognizer.adjust_for_ambient_noise(source, duration=0.8)
-        emit_event("idle", "Helen is listening quietly in the background.")
-        print("Helen daemon is running. Say 'Helen' followed by a command.")
+        detector = OfflineWakeWordDetector(source.SAMPLE_RATE)
+        emit_event("idle", "Helen is listening locally for the wake word.")
+        _write_status("listening", "Waiting locally for the wake word Helen.")
+        print("Helen is listening locally. Say 'Helen' to wake it.")
+        last_heartbeat = time.monotonic()
+
         while True:
-            heard = _listen_once(
-                recognizer,
-                source,
-                timeout=None,
-                phrase_time_limit=4,
-            )
-            if not heard:
+            audio_bytes = source.stream.read(source.CHUNK)
+            if time.monotonic() - last_heartbeat >= 5:
+                _write_status(
+                    "listening",
+                    "Waiting locally for the wake word Helen.",
+                )
+                last_heartbeat = time.monotonic()
+            if not detector.process(audio_bytes):
                 continue
 
-            command = _strip_wake_phrase(heard)
-            if command is None:
-                continue
-
-            print(f"Wake command: {command}")
-            emit_event("processing", f'Wake command: "{command}"')
+            detector.reset()
+            emit_event("listening", "Wake word detected. Listening for a command.")
+            _write_status("awake", "Wake word detected. Listening for command.")
             if acknowledge:
                 speak("Yes?")
-                time.sleep(0.1)
-            if not command:
-                command = _listen_once(
-                    recognizer,
-                    source,
-                    timeout=5,
-                    phrase_time_limit=8,
-                )
+            command = _listen_for_command(recognizer, source)
             if command:
+                emit_event("processing", f'Wake command: "{command}"')
+                _write_status("processing", command)
                 route_command(command)
+            _write_status("listening", "Waiting locally for the wake word Helen.")
+            time.sleep(0.4)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run Helen as a quiet wake-word daemon.")
+    parser = argparse.ArgumentParser(
+        description="Run Helen with local offline wake-word detection."
+    )
     parser.add_argument(
         "--no-ack",
         action="store_true",
-        help="Do not speak a short acknowledgement after the wake word.",
+        help="Do not speak after detecting the wake word.",
     )
     args = parser.parse_args()
     run_daemon(acknowledge=not args.no_ack)

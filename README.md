@@ -158,6 +158,10 @@ Run the background wake-word daemon:
 python background_daemon.py
 ```
 
+The wake phrase is detected locally using Vosk. Ambient speech is not sent to
+an online recognition service. After Helen wakes, command transcription may use
+the configured speech-recognition service.
+
 Then say:
 
 ```text
@@ -176,6 +180,12 @@ Remove it later with:
 
 ```bash
 python install_background_startup.py --remove
+```
+
+Check background-listener health:
+
+```bash
+python check_background_status.py
 ```
 
 To launch the temporary Tkinter test harness instead:

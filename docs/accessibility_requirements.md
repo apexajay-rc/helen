@@ -10,6 +10,7 @@ translated into native desktop behavior.
 - Helen only responds after the wake phrase, typed command, hotkey, or explicit
   button activation.
 - Wake phrase: `Helen`.
+- Wake phrase detection runs locally using a restricted offline speech model.
 
 ## Live Announcements
 

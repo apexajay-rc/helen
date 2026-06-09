@@ -1,4 +1,3 @@
-from transformers import pipeline
 from utils.audio import speak
 
 qa = None
@@ -10,6 +9,8 @@ def load_qa_model():
     global qa
     try:
         if qa is None:
+            from transformers import pipeline
+
             qa = pipeline("question-answering", model=QA_MODEL)
     except Exception:
         speak("Sorry, I could not load the language model.")
@@ -20,6 +21,8 @@ def load_chat_model():
     global chat
     try:
         if chat is None:
+            from transformers import pipeline
+
             chat = pipeline("text-generation", model=CHAT_MODEL)
     except Exception:
         speak("Sorry, I could not load the language model.")
